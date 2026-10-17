@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Thi Trắc Nghiệm - Vật Lý Đại Cương 1 (Chương 1)</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+        .question-box {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 25px 0;
+        }
+        .option-item {
+            background: #f1f5f9;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+        .option-item:hover:not(.disabled) {
+            background: #e2e8f0;
+            border-color: var(--primary-color);
+        }
+        .option-item.selected {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+        .option-item.correct {
+            background: #dcfce7 !important;
+            border-color: var(--success-color) !important;
+            color: #166534;
+        }
+        .option-item.incorrect {
+            background: #fee2e2 !important;
+            border-color: var(--error-color) !important;
+            color: #991b1b;
+        }
+        .option-item.disabled {
+            cursor: default;
+        }
+        .explanation {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            display: none;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        button:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+        .score-card {
+            text-align: center;
+            display: none;
+        }
+        .score-card h2 {
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>VẬT LÝ ĐẠI CƯƠNG 1 - CƠ NHIỆT</h1>
+    <div class="subtitle">Chương 1: Động Học Chất Điểm (95 Câu)</div>
+
+    <div id="quiz-screen">
+        <div class="quiz-controls">
+            <span id="question-counter">Câu 1 / 95</span>
+            <span id="score-tracker">Điểm: 0</span>
+        </div>
+
+        <div class="question-box" id="question-text">Đang tải câu hỏi...</div>
+        
+        <ul class="options-list" id="options-container">
+            <!-- Các phương án sẽ được load bằng Javascript -->
+        </ul>
+
+        <div class="explanation" id="explanation-box">
+            <strong>Gợi ý/Giải thích:</strong> Đáp án đúng cho câu hỏi này bám sát giáo trình Vật lý Đại cương.
+        </div>
+
+        <div class="btn-container">
+            <button id="prev-btn" onclick="prevQuestion()" disabled>Câu trước</button>
+            <button id="next-btn" onclick="nextQuestion()" disabled>Câu tiếp theo</button>
+        </div>
+    </div>
+
+    <div class="score-card" id="score-card">
+        <h2>Hoàn thành bài ôn tập!</h2>
+        <p id="final-score" style="font-size: 20px; margin: 20px 0;"></p>
+        <button onclick="restartQuiz làm lại">Làm lại từ đầu</button>
+    </div>
+</div>
+
+<script>
+    // Toàn bộ dữ liệu 95 câu hỏi Chương 1 (Đã chuẩn hóa đáp án A, B, C, D và vị trí đáp án đúng index 0-3)
+    const quizData = [
+        {
+            q: "Một vật được ném xiên trong trọng trường, bỏ qua sức cản không khí. Trong suốt chuyển động:",
+            options: [
+                "thành phần ngang của vận tốc không đổi.",
+                "thành phần đứng của vận tốc không đổi.",
+                "vectơ vận tốc không đổi.",
+                "độ lớn vận tốc không đổi"
+            ],
+            correct: 0
+        },
+        {
+            q: "Một quả bóng được ném thẳng đứng lên cao. Bỏ qua sức cản không khí. Trong quá trình bóng đi lên, phát biểu nào đúng?",
+            options: [
+                "Động năng và thế năng đều giảm.",
+                "Động năng giảm, thế năng tăng, cơ năng không đổi.",
+                "Động năng tăng, thế năng giảm, cơ năng không đổi.",
+                "Động năng giảm nên cơ năng cũng giảm."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một vật đang chuyển động theo chiều dương của trục, nhưng gia tốc hướng theo chiều âm. Điều nào sau đây chắc chắn đúng tại thời điểm đang xét?",
+            options: [
+                "Vật đang chuyển động chậm dần.",
+                "Vật sắp dừng lại.",
+                "Vận tốc và gia tốc ngược chiều nhau.",
+                "Vật đang chuyển động theo chiều âm."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một vật được ném thẳng đứng lên cao. Bỏ qua sức cản không khí. Tại điểm cao nhất,",
+            options: [
+                "vận tốc và gia tốc đều bằng 0.",
+                "vận tốc bằng 0 nhưng gia tốc khác 0.",
+                "gia tốc bằng 0 nhưng vận tốc khác 0.",
+                "vận tốc và gia tốc đều khác 0."
+            ],
+            correct: 1
+        },
+        {
+            q: "Hai vật được thả rơi đồng thời từ cùng một độ cao, một vật có khối lượng gấp đôi vật kia. Bỏ qua sức cản không khí. Khi chạm đất,",
+            options: [
+                "vật nặng có tốc độ lớn hơn.",
+                "vật nhẹ có tốc độ lớn hơn.",
+                "hai vật có cùng tốc độ.",
+                "chưa thể so sánh nếu không biết khối lượng."
+            ],
+            correct: 2
+        },
+        {
+            q: "Chọn chiều dương sang phải. Một xe đang chuyển động sang trái và giảm tốc cho đến khi dừng. Trong lúc xe còn chuyển động, giá trị vận tốc và gia tốc lần lượt là.",
+            options: [
+                "𝑣 < 0, 𝑎 < 0.",
+                "𝑣 < 0, 𝑎 > 0.",
+                "𝑣 > 0, 𝑎 < 0.",
+                "𝑣 > 0, 𝑎 > 0."
+            ],
+            correct: 1
+        },
+        {
+            q: "Từ cùng một độ cao, đồng thời thả rơi viên bi M và ném viên bi N theo phương ngang. Nếu bỏ qua sức cản không khí, viên bi nào chạm đất trước?",
+            options: [
+                "M.",
+                "N.",
+                "Cùng lúc.",
+                "Tùy thuộc tốc độ ném của N."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một vật được ném xiên 1 góc 𝞪 so với phương nằm ngang. Vật chỉ chịu tác dụng của trọng lực. Chọn trục x theo phương nằm ngang và trục y theo phương thẳng đứng. Tại vị trí có độ cao cực đại trong quỹ đạo của vật thì",
+            options: [
+                "vx = 0.",
+                "vy = 0.",
+                "v = 0.",
+                "a = 0."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một vật chuyển động tròn đều. Phát biểu nào sau đây đúng?",
+            options: [
+                "Vận tốc không đổi, gia tốc bằng 0.",
+                "Tốc độ không đổi, gia tốc theo phương tiếp tuyến với quỹ đạo.",
+                "Vận tốc thay đổi hướng, gia tốc hướng vào tâm quỹ đạo.",
+                "Gia tốc luôn cùng hướng với vận tốc."
+            ],
+            correct: 2
+        },
+        {
+            q: "Sau khi gặp nhau ở ngã tư, xe thứ 1 đi thẳng về hướng Nam, xe thứ 2 đi thẳng về hướng Đông. Người ngồi trên xe thứ 2 sẽ thấy xe thứ nhất đi về hướng",
+            options: [
+                "Tây - Nam.",
+                "Nam.",
+                "Đông - Nam.",
+                "Tây - Bắc."
+            ],
+            correct: 3
+        },
+        {
+            q: "Phát biểu nào đúng về quãng đường và độ lớn của độ dịch chuyển?",
+            options: [
+                "Chúng luôn bằng nhau.",
+                "Quãng đường luôn nhỏ hơn độ lớn độ dịch chuyển.",
+                "Quãng đường luôn lớn hơn hoặc bằng độ lớn độ dịch chuyển.",
+                "Không có mối liên hệ giữa chúng."
+            ],
+            correct: 2
+        },
+        {
+            q: "Chọn câu đúng. Một vật được ném thẳng đứng lên trên. Tại điểm cao nhất của quỹ đạo, bỏ qua sức cản không khí,",
+            options: [
+                "vận tốc và gia tốc đều bằng 0.",
+                "vận tốc bằng 0 nhưng gia tốc vẫn hướng thẳng đứng xuống dưới.",
+                "vận tốc hướng xuống và gia tốc bằng 0.",
+                "vận tốc và gia tốc đều hướng xuống dưới."
+            ],
+            correct: 1
+        },
+        {
+            q: "Trong chuyển động tròn đều, vectơ gia tốc của chất điểm có đặc điểm nào sau đây?",
+            options: [
+                "Có phương tiếp tuyến với quỹ đạo và cùng chiều chuyển động.",
+                "Có phương bán kính và hướng ra xa tâm quỹ đạo.",
+                "Có phương bán kính và luôn hướng về tâm quỹ đạo.",
+                "Có phương và chiều không đổi trong suốt chuyển động."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một vật chuyển động ném xiên. Trong giai đoạn vật đi xuống, góc giữa vectơ vận tốc và vectơ gia tốc",
+            options: [
+                "nhỏ hơn 90°.",
+                "bằng 90°.",
+                "lớn hơn 90°.",
+                "thay đổi từ lớn hơn 90° đến nhỏ hơn 90°."
+            ],
+            correct: 0
+        },
+        {
+            q: "Một vật được ném xiên, khi vật đang đi lên trước khi đạt độ cao cực đại, xét gia tốc theo hai thành phần tiếp tuyến và pháp tuyến. Phát biểu nào đúng?",
+            options: [
+                "at = 0 vì g không đổi.",
+                "Gia tốc pháp tuyến làm tốc độ giảm, còn gia tốc tiếp tuyến làm thay đổi hướng của vận tốc.",
+                "Gia tốc tiếp tuyến làm tốc độ giảm, còn gia tốc pháp tuyến làm thay đổi hướng của vận tốc.",
+                "Cả hai thành phần gia tốc đều làm giảm độ lớn vận tốc."
+            ],
+            correct: 2
+        },
+        {
+            q: "Trong chuyển động tròn không đều của một chất điểm, thành phần vector gia tốc pháp tuyến an và vector gia tốc tiếp tuyến at có ý nghĩa vật lý như thế nào?",
+            options: [
+                "an làm thay đổi độ lớn vận tốc, at làm thay đổi hướng vận tốc.",
+                "an làm thay đổi hướng vận tốc, at làm thay đổi độ lớn vận tốc.",
+                "Cả hai thành phần đều làm thay đổi độ lớn của vận tốc.",
+                "Cả hai thành phần đều làm thay đổi hướng của vectơ vận tốc."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một vật được ném thẳng đứng lên cao trong trọng trường (bỏ qua sức cản không khí). Tại điểm cao nhất của quỹ đạo.",
+            options: [
+                "Vận tốc của vật bằng không và gia tốc của vật cũng bằng không.",
+                "Vận tốc của vật khác không và gia tốc của vật bằng không.",
+                "Vận tốc của vật bằng không nhưng gia tốc của vật khác không (vẫn bằng gia tốc trọng trường g và hướng xuống).",
+                "Cả vận tốc và gia tốc của vật đều đạt giá trị cực đại."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một quả bóng được ném xiên trong điều kiện bỏ qua lực cản không khí. Tại điểm cao nhất của quỹ đạo, phát biểu nào sau đây đúng?",
+            options: [
+                "Vận tốc và gia tốc đều bằng 0.",
+                "Vận tốc bằng 0 nhưng gia tốc khác 0.",
+                "Thành phần vận tốc theo phương ngang khác 0, còn thành phần theo phương thẳng đứng bằng 0.",
+                "Gia tốc bằng 0 vì vật đang ở điểm cao nhất."
+            ],
+            correct: 2
+        },
+        {
+            q: "Khi khảo sát chuyển động ném xiên của một chất điểm trong trọng trường (bỏ qua sức cản không khí), bản chất của việc phân tích chuyển động thành phần là gì?",
+            options: [
+                "Chuyển động theo phương ngang là chuyển động thẳng đều, còn theo phương thẳng đứng là chuyển động rơi tự do (thẳng biến đổi đều).",
+                "Cả hai chuyển động thành phần theo phương ngang và phương thẳng đứng đều là chuyển động thẳng biến đổi đều.",
+                "Chuyển động theo phương ngang là thẳng đều, theo phương thẳng đứng là chuyển động đều.",
+                "Quỹ đạo của vật có dạng parabol là do sự thay đổi của gia tốc trọng trường theo vị trí."
+            ],
+            correct: 0
+        },
+        {
+            q: "Một xe đang chạy theo đường thẳng. Tại một thời điểm, gia tốc của xe hướng ngược chiều với vận tốc. Kết luận nào sau đây phù hợp nhất?",
+            options: [
+                "Xe chắc chắn đang chuyển động chậm dần.",
+                "Xe chắc chắn đang chuyển động nhanh dần.",
+                "Độ lớn vận tốc của xe đang giảm tại thời điểm đó.",
+                "Xe chắc chắn đang chuyển động theo chiều âm của trục tọa độ"
+            ],
+            correct: 2
+        },
+        {
+            q: "Trong các chuyển động sau, chuyển động nào được coi là chuyển động của chất điểm?",
+            options: [
+                "Ô tô đi vào garage.",
+                "Con sâu rọm bò trên chiếc lá khoai lang.",
+                "Xe lửa từ Sài Gòn tới Nha Trang.",
+                "Cái võng đu đưa."
+            ],
+            correct: 2
+        },
+        {
+            q: "Trong chuyển động tròn biến đổi đều, véc tơ gia tốc góc của chất điểm luôn.",
+            options: [
+                "Không đổi.",
+                "Vuông góc với mặt phẳng quỹ đạo.",
+                "Vuông góc với tiếp tuyến quỹ đạo và hướng về bề lõm quỹ đạo.",
+                "Tiếp tuyến với quỹ đạo chuyển động."
+            ],
+            correct: 1
+        },
+        {
+            q: "Đối tượng nghiên cứu chính của Vật lý học bao gồm.",
+            options: [
+                "Quá trình biến đổi hóa học từ chất này thành chất khác.",
+                "Sự sinh trưởng, phát triển và cơ chế sinh học của các sinh vật sống.",
+                "Các quy luật vận động tổng quát và bản chất của các hiện tượng tự nhiên.",
+                "Cả 3 phương án A, B và C đều chính xác."
+            ],
+            correct: 2
+        },
+        {
+            q: "Vectơ gia tốc a của chất điểm chuyển động trên qũi đạo cong bất kỳ nào cũng có đặc điểm",
+            options: [
+                "Vuông góc với vectơ vận tốc dài v.",
+                "Cùng phương với v.",
+                "Nằm trên tiếp tuyến của quỹ đạo.",
+                "Tất cả đều sai."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một chất điểm chuyển động thẳng với vận tốc đầu là v0, có vận tốc phụ thuộc theo thời gian là v = v0 – kt2 với k > 0 và k = const. Hỏi chuyển động của chất điểm là chuyển động.",
+            options: [
+                "Chậm dần đều.",
+                "Chậm dần.",
+                "Nhanh dần.",
+                "Biến đổi đều."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một sinh viên chạy bộ xuất phát từ cổng sân vận động, chạy đúng một vòng quanh sân vận động rồi dừng lại tại cổng. Phát biểu nào sau đây đúng?",
+            options: [
+                "Quãng đường và độ dời đều bằng 0.",
+                "Quãng đường bằng 0 nhưng độ dời khác 0.",
+                "Quãng đường bằng độ lớn của độ dời.",
+                "Quãng đường khác 0 nhưng độ dời bằng 0."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một xe đua chạy qua khúc cua với tốc độ (số chỉ đồng hồ tốc độ) không đổi. Nhận định nào đúng?",
+            options: [
+                "Xe có gia tốc vì hướng của vectơ vận tốc thay đổi.",
+                "Xe không có gia tốc vì tốc độ không đổi.",
+                "Xe có gia tốc vì độ lớn vận tốc thay đổi.",
+                "Xe không có gia tốc vì quãng đường tăng đều theo thời gian."
+            ],
+            correct: 0
+        },
+        {
+            q: "Một người nhảy dù rơi thẳng đứng khi chưa bung dù; lực cản không khí tăng theo tốc độ rơi. Trong giai đoạn trước khi đạt tốc độ giới hạn,",
+            options: [
+                "vận tốc và gia tốc cùng tăng dần.",
+                "vận tốc tăng dần, gia tốc luôn bằng g.",
+                "vận tốc tăng dần còn độ lớn gia tốc giảm dần về 0.",
+                "vận tốc giảm dần còn gia tốc tăng dần."
+            ],
+            correct: 2
+        },
+        {
+            q: "Từ cùng một độ cao, vật A được thả rơi, đồng thời vật B được ném theo phương ngang. Bỏ qua sức cản không khí. Kết luận nào đúng?",
+            options: [
+                "Vật A chạm đất trước vì đi quãng đường ngắn hơn.",
+                "Vật B chạm đất trước vì có vận tốc ban đầu lớn hơn.",
+                "Vật nào nặng hơn sẽ chạm đất trước.",
+                "Hai vật chạm đất cùng lúc vì chuyển động theo phương đứng của chúng giống nhau."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một hành khách ngồi yên trên ghế của một đoàn tàu đang chạy qua sân ga. Phát biểu nào đúng?",
+            options: [
+                "Hành khách đứng yên đối với mọi hệ quy chiếu.",
+                "Hành khách đứng yên đối với toa tàu nhưng chuyển động đối với sân ga.",
+                "Hành khách chuyển động đối với toa tàu nhưng đứng yên đối với sân ga.",
+                "Không thể nói hành khách đứng yên hay chuyển động vì không có hệ quy chiếu tuyệt đối để xét."
+            ],
+            correct: 1
+        },
+        {
+            q: "Trên đường Nguyễn Văn Cừ, cảnh sát dùng máy bắn tốc độ để kiểm tra một ô tô đang chạy, đại lượng nào được xác định trực tiếp để đánh giá ô tô có chạy vượt tốc độ cho phép hay không?",
+            options: [
+                "Tốc độ tức thời của ô tô.",
+                "Thời gian ô tô chuyển động.",
+                "Quãng đường ô tô đã đi.",
+                "Gia tốc trung bình của ô tô ."
+            ],
+            correct: 0
+        },
+        {
+            q: "Khi quan sát một điểm ở gần đầu cánh quạt của tua-bin điện gió, so với một điểm gần trục quay hơn, điểm ở đầu cánh quạt có tốc độ dài lớn hơn vì.",
+            options: [
+                "Điểm đó có khối lượng lớn hơn.",
+                "Điểm đó chịu lực hấp dẫn lớn hơn.",
+                "Điểm đó quay nhanh hơn quanh trục.",
+                "Điểm đó có bán kính quỹ đạo lớn hơn."
+            ],
+            correct: 3
+        },
+        {
+            q: "Mỗi ngày ta quan sát thấy Mặt Trời mọc ở phía Đông và lặn ở phía Tây. Trong quan điểm của người quan sát trên Trái Đất, Mặt Trời có vẻ chuyển động trên bầu trời. Hiện tượng này cho thấy.",
+            options: [
+                "Trạng thái chuyển động hay đứng yên phụ thuộc vào hệ quy chiếu.",
+                "Mọi chuyển động đều có quỹ đạo cố định.",
+                "Trái Đất đứng yên so với Mặt Trời.",
+                "Mặt Trời thực sự quay quanh Trái Đất mỗi ngày."
+            ],
+            correct: 0
+        },
+        {
+            q: "Một người ngồi trên vòng đu quay chuyển động tròn đều. Khi chiếu ánh sáng lên một bức tường, bóng của người trên tường chuyển động qua lại. Nhận định nào dưới đây là đúng.",
+            options: [
+                "Bóng có thể chuyển động qua lại dù người trên đu quay luôn chuyển động tròn.",
+                "Bóng của người chuyển động tròn đều giống người trên đu quay.",
+                "Bóng luôn có tốc độ không đổi.",
+                "Bóng đứng yên vì người chỉ chuyển động quanh một vị trí cố định."
+            ],
+            correct: 0
+        },
+        {
+            q: "Một hạt bụi nhỏ trong luồng khói được xem như một chất điểm. Khi gió thổi, hạt bụi chuyển động theo một đường cong thay vì đường thẳng. Nếu như hướng của vận tốc của hạt bụi thay đổi theo thời gian thì.",
+            options: [
+                "Hạt bụi chắc chắn chuyển động chậm dần.",
+                "Hạt bụi có gia tốc khác 0.",
+                "Hạt bụi chắc chắn chuyển động nhanh dần.",
+                "Hạt bụi có tốc độ bằng 0."
+            ],
+            correct: 1
+        },
+        {
+            q: "Phát biểu nào đúng khi nói về chuyển động ném xiên?",
+            options: [
+                "Chuyển động theo phương ngang là chuyển động nhanh dần đều.",
+                "Chuyển động theo phương ngang là chuyển động chậm dần đều.",
+                "Chuyển động theo phương dọc là chuyển động rơi tự do.",
+                "Chuyển động theo phương dọc là chuyển động thẳng đều."
+            ],
+            correct: 2
+        },
+        {
+            q: "Chuyển động nào sau đây không phải là chuyển động cơ học?",
+            options: [
+                "Chuyển động của chiếc xe chạy trên đường cao tốc.",
+                "Chuyển động của Trái Đất trong hệ Mặt Trời.",
+                "Sự truyền của sóng điện từ trong không khí.",
+                "Người đi bộ trên đường."
+            ],
+            correct: 2
+        },
+        {
+            q: "Phát biểu nào sau đây đúng về rơi tự do?",
+            options: [
+                "Vật có khối lượng nặng hơn sẽ rơi với gia tốc lớn hơn.",
+                "Các vật rơi tự do ở cùng một vị trí đều có gia tốc giống nhau (a = g m/s²).",
+                "Vận tốc không đổi trong suốt quãng đường đi của vật.",
+                "Vận tốc ban đầu càng lớn, gia tốc rơi tự do càng lớn."
+            ],
+            correct: 1
+        },
+        {
+            q: "Quỹ đạo chuyển động của một vật được ném xiên từ mặt đất (bỏ qua sức cản của không khí) có hình dạng là gì?",
+            options: [
+                "Một đường thẳng.",
+                "Một nhánh parabol.",
+                "Một đường tròn.",
+                "Một đường parabol hoàn chỉnh (gồm hai nhánh đối xứng)."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một hệ quy chiếu đầy đủ dùng để xác định vị trí và trạng thái chuyển động của một vật theo thời gian bao gồm những yếu tố nào?",
+            options: [
+                "Một vật làm mốc và một hệ tọa độ gắn với vật làm mốc.",
+                "Một mốc thời gian và một đồng hồ để đo thời gian.",
+                "Một vật làm mốc, một hệ tọa độ, một mốc thời gian và một đồng hồ.",
+                "Một thước đo chiều dài và một đồng hồ bấm giờ."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một vật chuyển động tròn đều với tốc độ 𝑣 không đổi. Phát biểu nào sau đây thể hiện đúng bản chất của gia tốc hướng tâm ?",
+            options: [
+                "Gia tốc hướng tâm đặc trưng cho sự thay đổi về phương và chiều của vectơ vận tốc.",
+                "Gia tốc hướng tâm đặc trưng cho sự thay đổi về độ lớn của tốc độ chuyển động.",
+                "Gia tốc hướng tâm luôn làm tăng động năng của vật theo thời gian.",
+                "Gia tốc hướng tâm triệt tiêu khi tốc độ 𝑣 giữ nguyên không đổi"
+            ],
+            correct: 0
+        },
+        {
+            q: "Trong chuyển động cong của chất điểm, gia tốc tiếp tuyến 𝑎 có ý nghĩa vật lý là gì?",
+            options: [
+                "Đặc trưng cho tốc độ biến thiên về độ lớn của vectơ vận tốc.",
+                "Đặc trưng cho tốc độ biến thiên về phương chiều của vectơ vận tốc.",
+                "Luôn hướng vào tâm của đường tròn xấp xỉ quỹ đạo tại điểm xét.",
+                "Quyết định dạng đường cong hình học của quỹ đạo chuyển động."
+            ],
+            correct: 0
+        },
+        {
+            q: "Bán kính cong 𝑅 tại một điểm bất kỳ trên quỹ đạo cong là.",
+            options: [
+                "Bán kính của đường tròn tiếp xúc xấp xỉ tốt nhất với quỹ đạo tại điểm đó.",
+                "Khoảng cách từ vị trí chất điểm đến gốc tọa độ được chọn ban đầu.",
+                "Độ dài của vectơ độ dời tính từ điểm bắt đầu chuyển động.",
+                "Độ cong trung bình của toàn bộ quỹ đạo trong suốt quá trình chuyển động."
+            ],
+            correct: 0
+        },
+        {
+            q: "Xét một vật được ném ngang trong trọng trường (bỏ qua sức cản không khí). Tại điểm bất kỳ trên quỹ đạo, góc hợp bởi vectơ vận tốc v và vectơ gia tốc g thay đổi như thế nào theo thời gian?",
+            options: [
+                "Giảm dần do phương của vận tốc ngày càng tiến gần hơn về phương thẳng đứng.",
+                "Tăng dần do thành phần vận tốc theo phương ngang tăng liên tục.",
+                "Giữ nguyên không đổi vì gia tốc trọng trường 𝑔 là hằng số.",
+                "Bằng 90 độ tại mọi điểm trên quỹ đạo chuyển động của vật."
+            ],
+            correct: 0
+        },
+        {
+            q: "Ý nghĩa vật lý của tính tương đối trong chuyển động là.",
+            options: [
+                "Quỹ đạo và vận tốc của cùng một vật phụ thuộc vào việc lựa chọn hệ quy chiếu.",
+                "Tốc độ chuyển động của vật luôn bằng nhau trong mọi hệ quy chiếu khác nhau.",
+                "Gia tốc của vật luôn thay đổi khi chuyển từ hệ quy chiếu này sang hệ quy chiếu khác.",
+                "Chuyển động của vật giống nhau trong mọi hệ quy chiếu."
+            ],
+            correct: 0
+        },
+        {
+            q: "Hệ quy chiếu bao gồm những gì?",
+            options: [
+                "Mốc thời gian và đồng hồ đo thời gian.",
+                "Vật mốc và hệ tọa độ gắn trên vật mốc.",
+                "Vật mốc, hệ tọa độ gắn trên vật mốc, mốc thời gian và đồng hồ.",
+                "Quỹ đạo chuyển động và vận tốc của vật."
+            ],
+            correct: 2
+        },
+        {
+            q: "Chọn câu đúng?",
+            options: [
+                "Gia tốc của chuyển động nhanh dần đều lớn hơn gia tốc của chuyển động chậm dần đều.",
+                "Chuyển động nhanh dần đều có gia tốc lớn thì có vận tốc lớn.",
+                "Gia tốc trong chuyển động thẳng nhanh dần đều có phương, chiều và độ lớn không đổi.",
+                "Chuyển động biến đổi đều có gia tốc tăng, giảm đều theo thời gian"
+            ],
+            correct: 2
+        },
+        {
+            q: "Chuyển động của vật nào sau đây có thể là rơi tự do",
+            options: [
+                "Một hòn bi được thả từ trên xuống.",
+                "Một máy bay đang hạ cánh",
+                "Một chiếc thang máy đang chuyển động đi xuống",
+                "Một vận động viên nhảy cầu đang lộn vòng xuống nước"
+            ],
+            correct: 0
+        },
+        {
+            q: "Trong các phát biểu sau đây về gia tốc hướng tâm của chuyển động tròn đều, phát biểu nào SAI?",
+            options: [
+                "Véctơ gia tốc luôn vuông góc với véctơ vận tốc. Không có thành phần gia tốc dọc theo tiếp tuyến quỹ đạo.",
+                "Véctơ gia tốc luôn hướng vào tâm nên gọi là gia tốc hướng tâm.",
+                "Với các chuyển động tròn đều cùng bán kính r, gia tốc hướng tâm tỉ lệ thuận với tốc độ dài.",
+                "Với các chuyển động tròn đều cùng tốc độ góc ω, gia tốc hướng tâm tỉ lệ thuận với bán kính quỹ đạo"
+            ],
+            correct: 2
+        },
+        {
+            q: "Chọn câu sai?",
+            options: [
+                "Đồ thị tọa độ – thời gian của chuyển động thẳng đều là một đường thẳng xiên góc.",
+                "Đồ thị tọa độ – thời gian của chuyển động thẳng bao giờ cũng là một đường thẳng.",
+                "Trong chuyển động thẳng đều, đồ thị theo thời gian của tọa độ và vận tốc đều là những đường thẳng.",
+                "Đồ thị vận tốc – thời gian của chuyển động thẳng đều là một đường thẳng song song với trục Ot."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một sinh viên đi từ ký túc xá đến giảng đường rồi trở về đúng vị trí xuất phát. Nhận xét nào đúng về toàn bộ hành trình?",
+            options: [
+                "Quãng đường và độ lớn độ dời đều bằng không.",
+                "Quãng đường khác không, còn độ dời bằng không.",
+                "Quãng đường bằng không, còn độ lớn độ dời khác không.",
+                "Quãng đường luôn bằng độ lớn độ dời."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một ô tô chuyển động thẳng theo chiều dương và đang giảm tốc độ. Vận tốc và gia tốc của ô tô có dấu như thế nào?",
+            options: [
+                "Vận tốc dương, gia tốc dương.",
+                "Vận tốc âm, gia tốc dương.",
+                "Vận tốc âm, gia tốc âm.",
+                "Vận tốc dương, gia tốc âm."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một vật chuyển động tròn đều. Vì sao vật vẫn có gia tốc mặc dù tốc độ không đổi?",
+            options: [
+                "Vì hướng của vectơ vận tốc liên tục thay đổi.",
+                "Vì độ lớn của vectơ vận tốc liên tục tăng.",
+                "Vì quãng đường vật đi được trong mỗi giây tăng.",
+                "Vì độ lớn bán kính quỹ đạo liên tục thay đổi."
+            ],
+            correct: 0
+        },
+        {
+            q: "Một quả bóng được ném xiên lên trong không khí. Bỏ qua sức cản không khí. Tại điểm cao nhất của quỹ đạo, nhận xét nào đúng?",
+            options: [
+                "Cả vận tốc và gia tốc đều bằng không.",
+                "Vận tốc bằng không, gia tốc hướng xuống.",
+                "Vận tốc nằm ngang, gia tốc hướng xuống.",
+                "Vận tốc nằm ngang, gia tốc bằng không."
+            ],
+            correct: 2
+        },
+        {
+            q: "Trên đồ thị tọa độ–thời gian của chuyển động thẳng, đường biểu diễn là một đường thẳng nghiêng xuống khi thời gian tăng. Điều này cho biết vật.",
+            options: [
+                "Chuyển động theo chiều âm với tốc độ tăng dần.",
+                "Chuyển động theo chiều âm với vận tốc không đổi.",
+                "Chuyển động theo chiều dương với tốc độ giảm dần.",
+                "Đứng yên tại một tọa độ âm."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một chất điểm chuyển động thẳng có phương trình tọa độ x = 2t³ − 9t² + 12t + 1 (m), trong đó t tính bằng giây. Tại thời điểm t = 0,5 s, chất điểm",
+            options: [
+                "chuyển động theo chiều dương và nhanh dần.",
+                "chuyển động theo chiều dương và chậm dần.",
+                "chuyển động theo chiều âm và nhanh dần.",
+                "chuyển động theo chiều âm và chậm dần."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một chất điểm chuyển động trong mặt phẳng có phương trình tọa độ x = 3t và y = 4t² (m), trong đó t tính bằng giây. Độ lớn vận tốc của chất điểm tại thời điểm t = 1 s bằng",
+            options: [
+                "5 m/s.",
+                "8 m/s.",
+                "√73 m/s.",
+                "11 m/s."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một ô tô đang chuyển động thẳng với vận tốc 20 m/s thì bắt đầu phanh và chuyển động chậm dần đều với gia tốc có độ lớn 4 m/s². Quãng đường ô tô đi được từ lúc bắt đầu phanh đến khi dừng hẳn là",
+            options: [
+                "25 m.",
+                "40 m.",
+                "50 m.",
+                "100 m."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một chất điểm chuyển động tròn đều trên quỹ đạo có bán kính R = 0,5 m và thực hiện được 4 vòng trong thời gian 2 s. Tốc độ dài của chất điểm bằng",
+            options: [
+                "2π m/s.",
+                "4π m/s.",
+                "8π m/s.",
+                "16π m/s."
+            ],
+            correct: 1
+        },
+        {
+            q: "Hai chất điểm chuyển động thẳng đều trên cùng một trục tọa độ, có phương trình chuyển động lần lượt là x1 = 4t + 2 (m) và x2 = 20 − 2t (m), trong đó t tính bằng giây. Thời điểm hai chất điểm gặp nhau là",
+            options: [
+                "2 s.",
+                "3 s.",
+                "4 s.",
+                "6 s."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một vật được ném xiên lên trên hợp với phương ngang một góc , bỏ qua sức cản của không khí. Tại vị trí cao nhất của quỹ đạo chuyển động, phát biểu nào sau đây đúng?",
+            options: [
+                "Vận tốc và gia tốc của vật đều bằng 0.",
+                "Thành phần vận tốc theo phương ngang bằng 0.",
+                "Thành phần vận tốc theo phương thẳng đứng bằng 0.",
+                "Gia tốc của vật hướng theo phương ngang."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một chất điểm chuyển động dọc theo trục Ox với phương trình tọa độ x(t) = 2 + 4t (m), trong đó t tính bằng giây. Tọa độ của chất điểm tại thời điểm t = 3 s bằng bao nhiêu?",
+            options: [
+                "6m.",
+                "10 m.",
+                "12 m.",
+                "14 m."
+            ],
+            correct: 3
+        },
+        {
+            q: "Phát biểu nào sau đây mô tả đúng vectơ độ dịch chuyển của một chất điểm?",
+            options: [
+                "Luôn có độ lớn bằng tổng quãng đường vật đi được.",
+                "Có phương và chiều luôn trùng với vận tốc ban đầu.",
+                "Là vectơ nối từ vị trí ban đầu đến vị trí cuối cùng của chất điểm.",
+                "Luôn có độ lớn khác không khi vật đã chuyển động"
+            ],
+            correct: 2
+        },
+        {
+            q: "Đối với một chất điểm chuyển động thẳng biến đổi đều, phát biểu nào sau đây là đúng?",
+            options: [
+                "Gia tốc của chất điểm không đổi theo thời gian.",
+                "Vận tốc của chất điểm không đổi theo thời gian.",
+                "Chất điểm luôn đi được những quãng đường bằng nhau trong những khoảng thời gian bằng nhau.",
+                "Tọa độ của chất điểm luôn tăng theo thời gian."
+            ],
+            correct: 0
+        },
+        {
+            q: "Trong chuyển động tròn đều, gia tốc hướng tâm có vai trò.",
+            options: [
+                "Làm tăng độ lớn vận tốc của chất điểm.",
+                "Làm giảm độ lớn vận tốc của chất điểm.",
+                "Làm thay đổi hướng của vectơ vận tốc.",
+                "Làm thay đổi khối lượng của chất điểm."
+            ],
+            correct: 2
+        },
+        {
+            q: "Chọn câu sai. Khi nào vật chuyển động thẳng nhanh dần đều.",
+            options: [
+                "Vectơ gia tốc cùng phương, ngược chiều với các vectơ vận tốc.",
+                "Vectơ gia tốc cùng phương, cùng chiều với các vectơ vận tốc.",
+                "Vận tốc tức thời tăng theo hàm số bậc nhất theo thời gian.",
+                "Quãng đường đi được là một hàm số bậc hai theo thời gian."
+            ],
+            correct: 0
+        },
+        {
+            q: "Một vật có khối lượng M, được ném ngang với vận tốc ban đầu V ở độ cao h. Bỏ qua sức cản không khí. Tầm bay xa của vật phụ thuộc vào",
+            options: [
+                "M và v.",
+                "M và h.",
+                "V và h.",
+                "M, V và h."
+            ],
+            correct: 2
+        },
+        {
+            q: "Trong chuyển động ném ngang, thành phần chuyển động theo phương nằm ngang là chuyển động gì?",
+            options: [
+                "Chuyển động rơi tự do.",
+                "Chuyển động nhanh dần.",
+                "Chuyển động thẳng đều.",
+                "Cả A và B đều đúng."
+            ],
+            correct: 2
+        },
+        {
+            q: "Viên bi A khối lượng gấp đôi viên bi B. Cùng lúc, từ mái nhà, bi A được thả rơi không vận tốc đầu, bi B được ném theo phương ngang. Bỏ qua sức cản của không khí. Kết luận nào sau đây đúng?",
+            options: [
+                "Hai viên bi chạm đất cùng lúc",
+                "Viên bi A chạm đất trước",
+                "Viên bi B chạm đất trước",
+                "Vận tốc chạm đất của hai viên bi bằng nhau."
+            ],
+            correct: 0
+        },
+        {
+            q: "Cho các phát biểu sau: (1) Gia tốc tiếp tuyến đặc trưng cho sự thay đổi về hướng của vectơ vận tốc. (2) Trong chuyển động tròn đều, gia tốc pháp tuyến luôn bằng 0. (3) Gia tốc pháp tuyến đặc trưng cho sự thay đổi về hướng của vectơ vận tốc. (4) Gia tốc tiếp tuyến đặc trưng cho sự thay đổi về độ lớn của vectơ vận tốc. Các phát biểu đúng là.",
+            options: [
+                "1, 2.",
+                "2, 4.",
+                "3, 4.",
+                "2, 3."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một ô tô chuyển động trên đường cong với tốc độ không đổi. Nhận xét nào sau đây đúng?",
+            options: [
+                "Ô tô không có gia tốc vì tốc độ không đổi.",
+                "Ô tô có gia tốc vì hướng của vectơ vận tốc thay đổi.",
+                "Ô tô có gia tốc chỉ khi tốc độ tăng.",
+                "Gia tốc của ô tô luôn cùng hướng với vận tốc."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một ô tô đang chạy trên đường thẳng. Người lái xe đạp phanh, tốc độ xe giảm dần. Trong khoảng thời gian xe đang giảm tốc, nhận xét nào sau đây đúng?",
+            options: [
+                "Vận tốc và gia tốc luôn cùng hướng.",
+                "Vận tốc và gia tốc ngược hướng nhau.",
+                "Vận tốc bằng không trong suốt quá trình phanh.",
+                "Gia tốc bằng không vì xe vẫn đang chuyển động."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một quả bóng được ném lên không trung với vận tốc v hợp với phương ngang một góc xác định. Nếu bỏ qua lực cản không khí, thì tại điểm cao nhất, vận tốc của nó là.",
+            options: [
+                "Bằng vận tốc ban đầu.",
+                "Bằng một nửa vận tốc ban đầu.",
+                "Bằng không.",
+                "Nhỏ nhất nhưng khác không."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một chất điểm chuyển động với vận tốc góc w = at2 + bt (a và b là hằng số dương). Hỏi chất điểm chuyển động như thế nào?",
+            options: [
+                "Nhanh dần đều.",
+                "Nhanh dần.",
+                "Chậm dần đều.",
+                "Chậm dần."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một máy bay bay thẳng đều theo phương ngang và thả một vật nhỏ. Bỏ qua sức cản của không khí, người đứng dưới mặt đất sẽ quan sát thấy vật chuyển động theo quỹ đạo nào?",
+            options: [
+                "Đường thẳng đứng.",
+                "Đường thẳng song song với phương chuyển động của máy bay.",
+                "Đường tròn.",
+                "Đường parabol."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một chất điểm chuyển động thẳng có phương trình tọa độ x = 2 + 3t - t2 (SI). Vận tốc của chất điểm tại t = 2 s là.",
+            options: [
+                "– 1 m/s.",
+                "1 m/s.",
+                "3 m/s.",
+                "5 m/s."
+            ],
+            correct: 1
+        },
+        {
+            q: "Đại lượng nào sau đây mô tả mức độ nhanh hay chậm và hướng chuyển động của chất điểm tại một thời điểm?",
+            options: [
+                "Quãng đường.",
+                "Tọa độ.",
+                "Vận tốc.",
+                "Gia tốc."
+            ],
+            correct: 2
+        },
+        {
+            q: "Trong chuyển động thẳng, nếu vận tốc và gia tốc cùng dấu thì.",
+            options: [
+                "Vật chuyển động chậm dần.",
+                "Vật chuyển động nhanh dần.",
+                "Vật đứng yên.",
+                "Vật chuyển động đều ."
+            ],
+            correct: 1
+        },
+        {
+            q: "Trong chuyển động thẳng đều, đại lượng nào sau đây không đổi theo thời gian?",
+            options: [
+                "Tọa độ.",
+                "Quãng đường.",
+                "Vận tốc.",
+                "Vị trí."
+            ],
+            correct: 2
+        },
+        {
+            q: "Trong chuyển động tròn đều, phát biểu nào sau đây đúng?",
+            options: [
+                "Vận tốc của vật không đổi cả độ lớn lẫn hướng.",
+                "Gia tốc của vật bằng 0.",
+                "Tốc độ của vật không đổi nhưng hướng của vận tốc thay đổi.",
+                "Vectơ gia tốc cùng hướng với vectơ vận tốc."
+            ],
+            correct: 2
+        },
+        {
+            q: "Tốc độ là đại lượng đặc trưng cho",
+            options: [
+                "mức độ nhanh hay chậm của chuyển động.",
+                "sự thay đổi hướng của chuyển động.",
+                "khả năng duy trì chuyển động của vật",
+                "sự thay đổi vị trí của vật trong không gian."
+            ],
+            correct: 0
+        },
+        {
+            q: "Khi một vật chuyển động thẳng đều thì",
+            options: [
+                "độ dịch chuyển không thay đổi theo thời gian.",
+                "vị trí của vật không thay đổi theo thời gian.",
+                "vận tốc vật không đổi theo thời gian.",
+                "độ lớn vận tốc thay đổi đều theo thời gian."
+            ],
+            correct: 2
+        },
+        {
+            q: "Đồ thị vận tốc theo thời gian của một vật chuyển động thẳng như hình vẽ (Đoạn MN, NO, OP, PQ). Chuyển động thẳng nhanh dần đều là đoạn.",
+            options: [
+                "MN.",
+                "NO.",
+                "OP.",
+                "PQ."
+            ],
+            correct: 3
+        },
+        {
+            q: "Chuyển động của vật rơi tự do không có tính chất nào sau đây?",
+            options: [
+                "Vận tốc của vật tăng đều theo thời gian.",
+                "Gia tốc của vật tăng đều theo thời gian.",
+                "Càng gần tới mặt đất vật rơi càng nhanh.",
+                "Quãng đường đi được là hàm số bậc hai theo thời gian"
+            ],
+            correct: 1
+        },
+        {
+            q: "Một vật rơi tự do từ độ cao h xuống tới mặt đất mất thời gian t1. Tốc độ khi chạm đất là v1. Trong hai giây cuối cùng trước khi chạm đất, vật rơi được độ cao h đó. Lấy g = 10m/s2. Độ lớn (h + v1t1) gần giá trị nào nhất sau đây?",
+            options: [
+                "273 m.",
+                "215 m.",
+                "212 m.",
+                "245 m."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một chất điểm chuyển động trên quỹ đạo cong. Tại một thời điểm, gia tốc tiếp tuyến at = 0 nhưng gia tốc pháp tuyến an ≠ 0. Kết luận nào đúng?",
+            options: [
+                "Chất điểm đang đứng yên.",
+                "Độ lớn vận tốc không đổi tức thời, nhưng hướng của vectơ vận tốc đang thay đổi.",
+                "Hướng của vectơ vận tốc không đổi, nhưng độ lớn vận tốc đang thay đổi.",
+                "Cả độ lớn và hướng của vectơ vận tốc đều không đổi."
+            ],
+            correct: 1
+        },
+        {
+            q: "Một vật được ném xiên trong trọng trường đều, bỏ qua sức cản không khí. Tại điểm cao nhất của quỹ đạo, phát biểu nào đúng?",
+            options: [
+                "Vận tốc và gia tốc đều bằng 0.",
+                "Thành phần vận tốc theo phương thẳng đứng bằng 0 và gia tốc cũng bằng 0.",
+                "Thành phần vận tốc theo phương thẳng đứng bằng 0, còn gia tốc vẫn hướng thẳng đứng xuống dưới với độ lớn g.",
+                "Thành phần vận tốc theo phương ngang bằng 0, còn gia tốc có độ lớn g."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một chất điểm chuyển động trong mặt phẳng theo r⃗ = (3t² − 2t)i⃗ + (t³ − 6t)j⃗ (m). Bán kính cong của quỹ đạo tại t = 2 s gần nhất với giá trị nào?",
+            options: [
+                "12,1 m.",
+                "15,7 m.",
+                "18,9 m.",
+                "22,4 m."
+            ],
+            correct: 1
+        },
+        {
+            q: "Từ mép một vách đá cao 20 m, một vật được ném với vận tốc ban đầu 25 m/s, hợp với phương ngang góc 37°. Bỏ qua sức cản không khí. Khoảng cách theo phương ngang từ chân vách đá đến điểm rơi là bao nhiêu?",
+            options: [
+                "60 m.",
+                "70 m.",
+                "80 m.",
+                "100 m."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một chất điểm chuyển động trên đường tròn bán kính R = 0,75 m với tọa độ góc θ = t³/3 − t² + 4t (rad). Độ lớn gia tốc toàn phần tại t = 2 s gần nhất là bao nhiêu?",
+            options: [
+                "10,5 m/s².",
+                "12,1 m/s².",
+                "13,5 m/s².",
+                "15,0 m/s²."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một chất điểm chuyển động thẳng đều với vận tốc v = 5 m/s. Trong thời gian 10 s, chất điểm đi được quãng đường bằng",
+            options: [
+                "2 m.",
+                "15 m.",
+                "50 m.",
+                "100 m."
+            ],
+            correct: 2
+        },
+        {
+            q: "Một vật bắt đầu chuyển động thẳng nhanh dần đều từ trạng thái nghỉ với gia tốc a = 2 m/s². Sau 5 s, vận tốc của vật là",
+            options: [
+                "2,5 m/s.",
+                "5 m/s.",
+                "10 m/s.",
+                "25 m/s."
+            ],
+            correct: 2
+        },
+        {
+            q: "Phương trình tọa độ của một chất điểm chuyển động thẳng là x = 2 + 3t + 2t² (m). Gia tốc của chất điểm là",
+            options: [
+                "2 m/s².",
+                "3 m/s².",
+                "4 m/s².",
+                "6 m/s²."
+            ],
+            correct: 3
+        },
+        {
+            q: "Một vật được ném ngang từ độ cao h với vận tốc ban đầu v. Bỏ qua sức cản không khí. Thời gian vật chạm đất phụ thuộc vào",
+            options: [
+                "chỉ vào v.",
+                "chỉ vào h.",
+                "v và khối lượng vật.",
+                "h và v."
+            ],
+            correct: 1
+        },
+        {
+            q: "Trong chuyển động tròn đều, đại lượng nào sau đây luôn thay đổi hướng theo thời gian?",
+            options: [
+                "Khối lượng.",
+                "Tốc độ.",
+                "Vận tốc.",
+                "Chu kỳ."
+            ],
+            correct: 2
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    const questionCounter = document.getElementById("question-counter");
+    const scoreTracker = document.getElementById("score-tracker");
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const explanationBox = document.getElementById("explanation-box");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const quizScreen = document.getElementById("quiz-screen");
+    const scoreCard = document.getElementById("score-card");
+    const finalScore = document.getElementById("final-score");
+
+    function loadQuestion() {
+        answered = false;
+        explanationBox.style.display = "none";
+        nextBtn.disabled = true;
+        prevBtn.disabled = currentQuestion === 0;
+
+        const q = quizData[currentQuestion];
+        questionCounter.innerText = `Câu ${currentQuestion + 1} / ${quizData.length}`;
+        scoreTracker.innerText = `Điểm: ${score}`;
+        questionText.innerText = q.q;
+
+        optionsContainer.innerHTML = "";
+        q.options.forEach((opt, index) => {
+            const li = document.createElement("li");
+            li.className = "option-item";
+            li.innerText = opt;
+            li.onclick = () => selectOption(index, li);
+            optionsContainer.appendChild(li);
+        });
+    }
+
+    function selectOption(selectedIndex, element) {
+        if (answered) return;
+        answered = true;
+
+        const q = quizData[currentQuestion];
+        const options = optionsContainer.children;
+
+        if (selectedIndex === q.correct) {
+            element.classList.add("correct");
+            score++;
+        } else {
+            element.classList.add("incorrect");
+            options[q.correct].classList.add("correct");
+        }
+
+        for (let opt of options) {
+            opt.classList.add("disabled");
+        }
+
+        scoreTracker.innerText = `Điểm: ${score}`;
+        explanationBox.style.display = "block";
+        nextBtn.disabled = false;
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            loadQuestion();
+        } else {
+            showScore();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            loadQuestion();
+        }
+    }
+
+    function showScore() {
+        quizScreen.style.display = "none";
+        scoreCard.style.display = "block";
+        finalScore.innerText = `Bạn đã trả lời đúng ${score} / ${quizData.length} câu. (Đạt ${(score/quizData.length*10).toFixed(1)} điểm)`;
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        quizScreen.style.display = "block";
+        scoreCard.style.display = "none";
+        loadQuestion();
+    }
+
+    // Khởi động bài quiz
+    loadQuestion();
+</script>
+
+</body>
+</html>
